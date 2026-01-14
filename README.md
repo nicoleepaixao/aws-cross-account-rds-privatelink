@@ -4,10 +4,16 @@
 
 ## Secure Cross-Account RDS Access with Reader and Writer Endpoints
 
-**Updated: January 2, 2026**
+**Updated: January 14, 2026**
 
 [![Follow @nicoleepaixao](https://img.shields.io/github/followers/nicoleepaixao?label=Follow&style=social)](https://github.com/nicoleepaixao)
 [![Star this repo](https://img.shields.io/github/stars/nicoleepaixao/aws-rds-privatelink-nlb?style=social)](https://github.com/nicoleepaixao/aws-rds-privatelink-nlb)
+[![Medium Article](https://img.shields.io/badge/Medium-12100E?style=for-the-badge&logo=medium&logoColor=white)](https://nicoleepaixao.medium.com/)
+
+<p align="center">
+  <a href="README-PT.md">🇧🇷</a>
+  <a href="README.md">🇺🇸</a>
+</p>
 
 </div>
 
@@ -54,18 +60,6 @@ Traditional cross-account database access requires:
 - **Port-Based Routing**: Reader and writer on different ports
 - **AWS Managed**: PrivateLink handles connectivity automatically
 - **Scalable**: Add more consumers without provider-side changes
-
----
-
-## **Architecture**
-
-### **High-Level Flow**
-
-<p align="center">
-  <img src="img/aws-cross-account-rds-privatelink.png" alt="AWS Private Link Architecture" width="800">
-</p>
-
-</div>
 
 ### **Key Design Principles**
 
@@ -445,47 +439,6 @@ jdbc:mysql://<PRIVATELINK_DNS>:3307/<database>  # Writer
 
 ---
 
-## **Operational Considerations**
-
-### **RDS Failover Handling**
-
-When Aurora/MySQL cluster fails over, the underlying IP addresses can change.
-
-**Challenge:** IP-based target groups need IP updates after failover.
-
-**Solution:** Implement automated IP monitoring and updates.
-
-### **IP Update Automation Script**
-
-```python
-#!/usr/bin/env python3
-import boto3
-
-def update_target_ips():
-    rds = boto3.client('rds')
-    elbv2 = boto3.client('elbv2')
-    
-    # Get current RDS IPs
-    cluster = rds.describe_db_clusters(DBClusterIdentifier='<CLUSTER_ID>')
-    writer_endpoint = cluster['DBClusters'][0]['Endpoint']
-    reader_endpoint = cluster['DBClusters'][0]['ReaderEndpoint']
-    
-    # Resolve to IPs (implement DNS resolution)
-    writer_ip = resolve_dns(writer_endpoint)
-    reader_ip = resolve_dns(reader_endpoint)
-    
-    # Get current target group IPs
-    reader_targets = elbv2.describe_target_health(
-        TargetGroupArn='<TG_READER_ARN>'
-    )
-    writer_targets = elbv2.describe_target_health(
-        TargetGroupArn='<TG_WRITER_ARN>'
-    )
-    
-    # Compare and update if changed
-    # (implement comparison and registration logic)
-```
-
 **Deployment Options:**
 - **Lambda function** triggered by EventBridge (every 5 minutes)
 - **Cron job** on EC2 instance
@@ -575,19 +528,6 @@ For more details about AWS PrivateLink, NLB, and RDS best practices, refer to:
 
 ---
 
-## **Future Enhancements**
-
-| **Feature** | **Description** | **Status** |
-|-------------|-----------------|------------|
-| Automated Failover | Lambda-based IP update on RDS failover | In Development |
-| Multi-Region Support | Cross-region PrivateLink configuration | Planned |
-| Monitoring Dashboard | CloudWatch metrics visualization | Future |
-| Cost Tracking | PrivateLink and NLB cost analysis | Planned |
-| PostgreSQL Support | Extend pattern to RDS PostgreSQL | Future |
-| Health Check Automation | Automated target group health monitoring | Planned |
-
----
-
 ## **Connect & Follow**
 
 Stay updated with AWS networking and PrivateLink best practices:
@@ -612,6 +552,8 @@ This implementation guide provides a production-ready pattern for cross-account 
 
 **Happy building secure AWS architectures!**
 
-*Document last updated: January 2, 2026*
+*Document Created: January 2, 2026*
+
+Made with ❤️ by [Nicole Paixão](https://github.com/nicoleepaixao)
 
 </div>
